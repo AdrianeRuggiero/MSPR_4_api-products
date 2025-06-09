@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
-from app.security.auth import create_access_token
+from app.security.auth import create_access_token, verify_token
 
 client = TestClient(app)
 
@@ -70,3 +70,33 @@ def test_forbidden_access():
 def test_metrics():
     response = client.get("/metrics")
     assert response.status_code == 200
+
+def test_token_generation():
+    response = client.post(
+        "/token",
+        data={"username": "admin", "password": "any"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"}
+    )
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+
+def test_invalid_token():
+    invalid_token = "invalid.token.structure"
+    payload = verify_token(invalid_token)
+    assert payload is None
+
+def test_get_product_by_id_not_found():
+    response = client.get("/products/000000000000000000000000", headers=get_auth_headers())
+    assert response.status_code == 404
+
+def test_update_product_not_found():
+    response = client.put(
+        "/products/000000000000000000000000",
+        json={"name": "Updated", "price": 10.0},
+        headers=get_auth_headers()
+    )
+    assert response.status_code == 404
+
+def test_delete_product_not_found():
+    response = client.delete("/products/000000000000000000000000", headers=get_auth_headers())
+    assert response.status_code == 404
