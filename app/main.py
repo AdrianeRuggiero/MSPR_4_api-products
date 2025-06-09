@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.routes import products
+from app.routes import products,token
 
 app = FastAPI(
     title="Products API",
@@ -19,4 +19,5 @@ def root():
     return {"msg": "Bienvenue sur l'API Products"}
 
 # Inclusion des routes produits
+app.include_router(token.router)
 app.include_router(products.router, prefix="/products", tags=["products"])
