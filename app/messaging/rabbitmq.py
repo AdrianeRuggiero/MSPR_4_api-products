@@ -22,7 +22,7 @@ def publish_product_created(product_data: dict, channel=None):
     channel.close()
 
 # Consommateur (à exécuter manuellement)
-def consume_product_created(callback):
+def consume_product_created(callback): # pragma: no cover
     channel = get_channel()
 
     def wrapper(ch, method, properties, body):
@@ -32,4 +32,4 @@ def consume_product_created(callback):
 
     channel.basic_consume(queue='product_created', on_message_callback=wrapper)
     print(" [*] En attente de messages sur 'product_created'. CTRL+C pour arrêter.")
-    channel.start_consuming()
+    channel.start_consuming() # bloquant
