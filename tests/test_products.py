@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from unittest.mock import patch
 from app.main import app
 from app.security.auth import create_access_token, verify_token
 
@@ -8,6 +9,7 @@ def get_auth_headers(role="admin"):
     token = create_access_token({"sub": "tester", "role": role})
     return {"Authorization": f"Bearer {token}"}
 
+@patch("app.services.product_service.publish_product_created", lambda x: None)
 def test_create_product():
     payload = {
         "name": "Café du Brésil",
@@ -24,11 +26,9 @@ def test_list_products():
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
+@patch("app.services.product_service.publish_product_created", lambda x: None)
 def test_get_product_by_id():
-    payload = {
-        "name": "Test ID",
-        "price": 2.99
-    }
+    payload = {"name": "Test ID", "price": 2.99}
     create_resp = client.post("/products/", json=payload, headers=get_auth_headers())
     product_id = create_resp.json()["_id"]
 
@@ -36,6 +36,7 @@ def test_get_product_by_id():
     assert get_resp.status_code == 200
     assert get_resp.json()["name"] == "Test ID"
 
+@patch("app.services.product_service.publish_product_created", lambda x: None)
 def test_update_product():
     payload = {"name": "Old Product", "price": 4.99}
     create_resp = client.post("/products/", json=payload, headers=get_auth_headers())
@@ -46,6 +47,7 @@ def test_update_product():
     assert update_resp.status_code == 200
     assert update_resp.json()["name"] == "New Product"
 
+@patch("app.services.product_service.publish_product_created", lambda x: None)
 def test_delete_product():
     payload = {"name": "ToDelete", "price": 1.99}
     create_resp = client.post("/products/", json=payload, headers=get_auth_headers())
