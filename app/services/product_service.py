@@ -2,13 +2,16 @@ from typing import List, Optional
 from app.models.product import ProductModel, PyObjectId
 from app.db.mongo import products_collection
 from bson import ObjectId
+from app.messaging.rabbitmq import publish_product_created
 
 # Créer un nouveau produit
 def create_product(product: ProductModel) -> ProductModel:
     product_dict = product.model_dump(by_alias=True, exclude_unset=True)
     result = products_collection.insert_one(product_dict)
     product_dict["_id"] = str(result.inserted_id)
+    publish_product_created(product_dict)
     return ProductModel(**product_dict)
+
 
 # Obtenir un produit par ID
 def get_product(product_id: str) -> Optional[ProductModel]:
