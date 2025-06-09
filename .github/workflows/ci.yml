@@ -1,0 +1,42 @@
+name: CI - Products API
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  test-and-analyze:
+    name: Test + Coverage + SonarCloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🧪 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: 🧪 Run tests with coverage
+        run: |
+          pytest --cov=app --cov-report=xml
+
+      - name: ☁️ SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2.0.2
+        with:
+          projectBaseDir: .
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: AdrianeRuggiero_api-products
+          SONAR_ORGANIZATION: adrianeruggiero
